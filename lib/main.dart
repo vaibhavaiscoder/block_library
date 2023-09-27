@@ -1,60 +1,41 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MyWebView(),
-    );
-  }
+  State<StatefulWidget> createState() => _MyAppState();
 }
 
-class MyWebView extends StatefulWidget {
-  const MyWebView({super.key});
-
-  @override
-  _MyWebViewState createState() => _MyWebViewState();
-}
-
-class _MyWebViewState extends State<MyWebView> {
-  late InAppWebViewController webView;
+class _MyAppState extends State<MyApp> {
+  final _imagePaths = [
+    'assets/1.jpeg',
+    'assets/2.jpeg',
+    'assets/3.jpeg',
+    'assets/6.jpeg',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'WEBVIEW',
-              style: TextStyle(color: Colors.blue),
-            ),
-            Text(
-              '🌐',
-              style: TextStyle(color: Colors.blue),
-            ),
-          ],
-        ),
+    return MaterialApp(
+        home: Scaffold(
+      body: SafeArea(
+        child: CarouselSlider(
+            options: CarouselOptions(autoPlay: true),
+            items: _imagePaths.map((imagePath) {
+              return Builder(builder: (context) {
+                return Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Image.asset(imagePath));
+              });
+            }).toList()),
       ),
-      body: InAppWebView(
-        initialUrlRequest: URLRequest(
-            url: Uri.parse(
-                'https://youtube.com')), // Replace with your desired URL
-        onWebViewCreated: (controller) {
-          webView = controller;
-        },
-      ),
-    );
+    ));
   }
 }
