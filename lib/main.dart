@@ -1,4 +1,7 @@
+import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/flash_card.dart';
+import 'package:flutter_application_1/flash_card_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,76 +15,67 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final controller = TextEditingController();
+  final List<Flashcard> _flashcards = [
+    Flashcard(
+        question: "What programming language does Flutter use?",
+        answer: "Dart"),
+    Flashcard(question: "Who you gonna call?", answer: "Ghostbusters!"),
+    Flashcard(question: "Who are you?", answer: "chutya!")
+  ];
 
-  final List<bool> _selection = [true, false, false];
-
-  String? tip;
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (tip != null)
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  tip.toString(),
-                  style: const TextStyle(fontSize: 30),
-                ),
-              ),
-            const Text('Total Amount'),
-            SizedBox(
-              width: 70,
-              child: TextField(
-                controller: controller,
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(hintText: '\$100.00'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ToggleButtons(
-                  isSelected: _selection,
-                  onPressed: updateSelection,
-                  children: const [Text('10%'), Text('15%'), Text('20%')]),
-            ),
-            TextButton(
-              onPressed: calculateTip,
-              child: const Text(
-                'Calculate Tip',
-                style:
-                    TextStyle(color: Colors.green), // Set the text color here
-              ),
-            )
-          ],
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                  width: 250,
+                  height: 250,
+                  child: FlipCard(
+                      front: FlashcardView(
+                        text: _flashcards[_currentIndex].question,
+                      ),
+                      back: FlashcardView(
+                        text: _flashcards[_currentIndex].answer,
+                      ))),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton.icon(
+                    onPressed: showPreviousCard,
+                    icon: const Icon(Icons.chevron_left),
+                    label: const Text('Prev'),
+                  ),
+                  TextButton.icon(
+                    onPressed: showNextCard,
+                    icon: const Icon(Icons.chevron_right),
+                    label: const Text('Next'),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
-  void updateSelection(int selectedIndex) {
+  void showNextCard() {
     setState(() {
-      for (int i = 0; i < _selection.length; i++) {
-        _selection[i] = selectedIndex == i;
-      }
+      _currentIndex =
+          (_currentIndex + 1 < _flashcards.length) ? _currentIndex + 1 : 0;
     });
   }
 
-  void calculateTip() {
-    final totalAmount = double.parse(controller.text);
-    final selectedIndex = _selection.indexWhere((element) => element);
-    final tipPercentage = [0.1, 0.15, 0.2][selectedIndex];
-
-    final tipTotal = (totalAmount * tipPercentage).toStringAsFixed(2);
-
+  void showPreviousCard() {
     setState(() {
-      tip = '\$$tipTotal';
+      _currentIndex =
+          (_currentIndex - 1 >= 0) ? _currentIndex - 1 : _flashcards.length - 1;
     });
   }
 }
