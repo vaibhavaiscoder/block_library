@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models.dart';
-import 'package:flutter_application_1/preferences_service.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share/share.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,126 +17,44 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _preferencesService = PreferencesService();
-
-  final _usernameController = TextEditingController();
-  var _selectedGender = Gender.FEMALE;
-  var _selectedLanguages = <ProgrammingLanguage>{};
-  var _isEmployed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _populateFields();
-  }
-
-  void _populateFields() async {
-    final settings = await _preferencesService.getSettings();
-    setState(() {
-      _usernameController.text = settings.username;
-      _selectedGender = settings.gender;
-      _selectedLanguages = settings.programmingLanguages;
-      _isEmployed = settings.isEmployed;
-    });
-  }
+  final _screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('User Settings'),
-        ),
-        body: ListView(
-          children: [
-            ListTile(
-              title: TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
+        home: Scaffold(
+            body: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+          Screenshot(
+            controller: _screenshotController,
+            child: Card(
+                child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Image.asset('assets/x.png'),
+                  const Text(
+                    'Code Passionately',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-            ),
-            RadioListTile(
-                title: const Text('Female'),
-                value: Gender.FEMALE,
-                groupValue: _selectedGender,
-                onChanged: (newValue) =>
-                    setState(() => _selectedGender = newValue!)),
-            RadioListTile(
-                title: const Text('Male'),
-                value: Gender.MALE,
-                groupValue: _selectedGender,
-                onChanged: (newValue) =>
-                    setState(() => _selectedGender = newValue!)),
-            RadioListTile(
-                title: const Text('Other'),
-                value: Gender.OTHER,
-                groupValue: _selectedGender,
-                onChanged: (newValue) =>
-                    setState(() => _selectedGender = newValue!)),
-            CheckboxListTile(
-                title: const Text('Dart'),
-                value: _selectedLanguages.contains(ProgrammingLanguage.DART),
-                onChanged: (_) {
-                  setState(() {
-                    _selectedLanguages.contains(ProgrammingLanguage.DART)
-                        ? _selectedLanguages.remove(ProgrammingLanguage.DART)
-                        : _selectedLanguages.add(ProgrammingLanguage.DART);
-                  });
-                }),
-            CheckboxListTile(
-                title: const Text('JavaScript'),
-                value:
-                    _selectedLanguages.contains(ProgrammingLanguage.JAVASCRIPT),
-                onChanged: (_) {
-                  setState(() {
-                    _selectedLanguages.contains(ProgrammingLanguage.JAVASCRIPT)
-                        ? _selectedLanguages
-                            .remove(ProgrammingLanguage.JAVASCRIPT)
-                        : _selectedLanguages
-                            .add(ProgrammingLanguage.JAVASCRIPT);
-                  });
-                }),
-            CheckboxListTile(
-                title: const Text('Kotlin'),
-                value: _selectedLanguages.contains(ProgrammingLanguage.KOTLIN),
-                onChanged: (_) {
-                  setState(() {
-                    _selectedLanguages.contains(ProgrammingLanguage.KOTLIN)
-                        ? _selectedLanguages.remove(ProgrammingLanguage.KOTLIN)
-                        : _selectedLanguages.add(ProgrammingLanguage.KOTLIN);
-                  });
-                }),
-            CheckboxListTile(
-                title: const Text('Swift'),
-                value: _selectedLanguages.contains(ProgrammingLanguage.SWIFT),
-                onChanged: (_) {
-                  setState(() {
-                    _selectedLanguages.contains(ProgrammingLanguage.SWIFT)
-                        ? _selectedLanguages.remove(ProgrammingLanguage.SWIFT)
-                        : _selectedLanguages.add(ProgrammingLanguage.SWIFT);
-                  });
-                }),
-            SwitchListTile(
-                title: const Text('Is Employed'),
-                value: _isEmployed,
-                onChanged: (newValue) =>
-                    setState(() => _isEmployed = newValue)),
-            TextButton(
-                onPressed: _saveSettings, child: const Text('Save Settings'))
-          ],
-        ),
-      ),
-    );
+            )),
+          ),
+          TextButton(
+            onPressed: _takeScreenshot,
+            child: const Text('Take Screenshot and Share'),
+          )
+        ]))));
   }
 
-  void _saveSettings() {
-    final newSettings = Settings(
-        username: _usernameController.text,
-        gender: _selectedGender,
-        programmingLanguages: _selectedLanguages,
-        isEmployed: _isEmployed);
-
-    print(newSettings);
-    _preferencesService.saveSettings(newSettings);
+  void _takeScreenshot() async {
+    final uint8List = await _screenshotController.capture();
+    String tempPath = (await getTemporaryDirectory()).path;
+    File file = File('$tempPath/image.png');
+    await file.writeAsBytes(uint8List!);
+    await Share.shareFiles([file.path]);
   }
 }
