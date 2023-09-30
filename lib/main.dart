@@ -1,60 +1,51 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:screenshot/screenshot.dart';
-import 'package:share/share.dart';
-import 'package:path_provider/path_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
   @override
   State<StatefulWidget> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final _screenshotController = ScreenshotController();
+  final _users = List.filled(100, "kilo loco");
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-            body: Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-          Screenshot(
-            controller: _screenshotController,
-            child: Card(
-                child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Image.asset('assets/x.png'),
-                  const Text(
-                    'Code Passionately',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            )),
-          ),
-          TextButton(
-            onPressed: _takeScreenshot,
-            child: const Text('Take Screenshot and Share'),
-          )
-        ]))));
+      home: DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            backgroundColor: Colors.white70,
+            appBar: AppBar(
+              bottom: TabBar(tabs: [Text('List'), Text('Grid')]),
+            ),
+            body:
+                TabBarView(children: [_contentListView(), _contentGridView()]),
+          )),
+    );
   }
 
-  void _takeScreenshot() async {
-    final uint8List = await _screenshotController.capture();
-    String tempPath = (await getTemporaryDirectory()).path;
-    File file = File('$tempPath/image.png');
-    await file.writeAsBytes(uint8List!);
-    await Share.shareFiles([file.path]);
+  Widget _contentListView() {
+    return ListView.builder(
+      itemCount: _users.length,
+      itemBuilder: (context, index) => Card(
+        child: ListTile(
+          title: Text(index.toString()),
+          onTap: () => print("hello $index"),
+        ),
+      ),
+    );
+  }
+
+  Widget _contentGridView() {
+    return GridView.builder(
+        itemCount: _users.length,
+        gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+        itemBuilder: (context, index) =>
+            Card(child: GridTile(child: Center(child: Text(_users[index])))));
   }
 }
